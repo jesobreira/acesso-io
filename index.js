@@ -1,9 +1,55 @@
 'use.strict';
 
-module.exports = function(cfg) {
+NodeAcessoIO = function(cfg) {
 
 	const request = require('request');
-	const image2base64 = require("imageurl-base64");
+	const sharp = require('sharp');
+	const fs = require('fs');
+
+	const imageConvert = function(url_or_path, download, cb) {
+
+		var bufferProcess = function(buffer) {
+			sharp(buffer)
+				.rotate() // https://stackoverflow.com/questions/35959200/when-using-node-sharp-package-to-resize-image-and-upload-to-s3-it-is-rotated#comment59637033_35959200
+				.resize(500)
+				.toBuffer()
+				.then( data => {
+					cb(false, data.toString('base64'))
+				})
+				.catch( err => cb);
+		}
+
+		if(download) {
+			var options = {
+		        uri: url_or_path,
+		        encoding: "binary"
+		    };
+
+		    // Thanks to github.com/leecrossley/imageurl-base64
+		    request(options, function(e, resp, body) {
+		        if (e) {
+		            return cb(e);
+		        }
+
+		        if (resp.statusCode !== 200) {
+		            var error = new Error('response was non 200');
+		            error.response = body;
+		            return cb(error);
+		        }
+
+		        var img = new Buffer(body.toString(), "binary");
+		        bufferProcess(img);
+		    });
+		} else {
+			fs.readFile(url_or_path, 'utf8', function(err, data) {
+				if(err) {
+					cb(err);
+				} else {
+					bufferProcess(data);
+				}
+			})
+		}
+	}
 
 	return {
 		"user": {
@@ -18,12 +64,16 @@ module.exports = function(cfg) {
 					}
 				};
 				request(options, function(error, response, body) {
-					body = JSON.parse(body);
-					if(body.GetAuthTokenResult.error) {
-						cb(body.GetAuthTokenResult.error)
-					} else {
-						cfg.authToken = body.GetAuthTokenResult.AuthToken;
-						cb(false, body.GetAuthTokenResult.AuthToken)
+					try {
+						body = JSON.parse(body);
+						if(body.Error) {
+							cb(body.Error)
+						} else {
+							cfg.authToken = body.GetAuthTokenResult.AuthToken;
+							cb(false, body.GetAuthTokenResult.AuthToken)
+						}
+					} catch(e) {
+						cb(e);
 					}
 				})
 			}
@@ -43,18 +93,22 @@ module.exports = function(cfg) {
 					})
 				};
 				request(options, function(error, response, body) {
-					body = JSON.parse(body);
-					if(body.Error) {
-						cb(body.Error)
-					} else {
-						cfg.last_process_id = body.Process.Id;
-						cb(false, body.Process.Id);
+					try {
+						body = JSON.parse(body);
+						if(body.Error) {
+							cb(body.Error)
+						} else {
+							cfg.last_process_id = body.CreateProcessResult.Process.Id;
+							cb(false, body.CreateProcessResult.Process.Id);
+						}
+					} catch(e) {
+						cb(e);
 					}
 				});
 			},
 
 			"faceInsert": function(url, cb) {
-				image2base64(url, function(error, b64) {
+				imageConvert(url, true, function(error, b64) {
 					if(!error) {
 						var options = {
 							method: 'POST',
@@ -69,11 +123,15 @@ module.exports = function(cfg) {
 							})
 						};
 						request(options, function(error, response, body) {
-							body = JSON.parse(body);
-							if(body.Error) {
-								cb(body.Error)
-							} else {
-								cb(false);
+							try {
+								body = JSON.parse(body);
+								if(body.Error) {
+									cb(body.Error)
+								} else {
+									cb(false);
+								}
+							} catch(e) {
+								cb(e);
 							}
 						});
 					}
@@ -81,7 +139,7 @@ module.exports = function(cfg) {
 			},
 
 			"documentInsert": function(type, url, cb) {
-				image2base64(url, function(error, b64) {
+				imageConvert(url, true, function(error, b64) {
 					if(!error) {
 						var options = {
 							method: 'POST',
@@ -96,11 +154,15 @@ module.exports = function(cfg) {
 							})
 						};
 						request(options, function(error, response, body) {
-							body = JSON.parse(body);
-							if(body.Error) {
-								cb(body.Error)
-							} else {
-								cb(false);
+							try {
+								body = JSON.parse(body);
+								if(body.Error) {
+									cb(body.Error)
+								} else {
+									cb(false);
+								}
+							} catch(e) {
+								cb(e);
 							}
 						});
 					}
@@ -117,11 +179,16 @@ module.exports = function(cfg) {
 					}
 				};
 				request(options, function(error, response, body) {
-					body = JSON.parse(body);
-					if(body.Error) {
-						cb(body.Error)
-					} else {
-						cb(false);
+					console.log(body);
+					try {
+						body = JSON.parse(body);
+						if(body.Error) {
+							cb(body.Error)
+						} else {
+							cb(false);
+						}
+					} catch(e) {
+						cb(e);
 					}
 				});
 			},
@@ -136,14 +203,25 @@ module.exports = function(cfg) {
 					}
 				};
 				request(options, function(error, response, body) {
-					body = JSON.parse(body);
-					if(body.Error) {
-						cb(body.Error)
-					} else {
-						cb(false, body.Process);
+					try {
+						body = JSON.parse(body);
+						if(body.Error) {
+							cb(body.Error)
+						} else {
+							cb(false, body);
+						}
+					} catch (e) {
+						cb(e);
 					}
 				});
 			}
 		}
 	}
+}
+
+if (typeof (exports) !== "undefined") {
+    if (typeof (module) !== "undefined" && module.exports) {
+        exports = module.exports = NodeAcessoIO;
+    }
+    exports = NodeAcessoIO;
 }

@@ -4,14 +4,14 @@ const acessoio = require('../index.js');
 // Creates an instance
 const acesso = acessoio({
 	api_key: '',
-	url: ''
+	url: 'https://crediariohomolog.acesso.io/your_instance/services/v2/credservice.svc'
 });
 
 // Get access token - set your username and password here
-acesso.user.authToken('username', 'password', function(error, auth_token) {
+acesso.user.authToken('', '', function(error, auth_token) {
 	if(!error) {
 		
-		// Create a new process
+		// Create a new process - set details here
 		acesso.process.create(1, {
 			Code: '', // CPF
 			Name: '',
@@ -20,41 +20,57 @@ acesso.user.authToken('username', 'password', function(error, auth_token) {
 
 			if(!error) {
 
-				// Upload a face
-				acesso.process.faceInsert('http://placehold.it/300x400', function(error) {
+				//Upload a face
+				acesso.process.faceInsert('http://localhost:8888/foto.JPG', function(error) {
 
 					if(!error) {
 
 						// Upload a document
 
-						acesso.process.documentinsert(2, 'http://placehold.it/640x400', function(error) {
+						acesso.process.documentInsert(2, 'http://localhost:8888/documento.JPG', function(error) {
 
 							if(!error) {
 
 								// Executes the process
-								acesso.process.execute();
+								acesso.process.execute(function(error) {
+									if(!error) {
+										var checkProcess = function() {
 
-								// Every 10 seconds, check process status
-								setInterval(function() {
-									acesso.process.get(function(error, info) {
+											acesso.process.get(function(error, info) {
 
-										if(!error) {
+												if(!error) {
 
-											console.log(info.Status);
+													console.log(info);
 
+												} else {
+													console.log(error);
+												}
+
+											});
 										}
 
-									})
-								}, 10);
+										// Every 10 seconds, check process status
+										checkProcess();
+										setInterval(checkProcess, 10);
+									} else {
+										console.log(error);
+									}
+								});
 
+							} else {
+								console.log(error);
 							}
 
 						})
 
+					} else {
+						console.log(error);
 					}
 
 				})
 
+			} else {
+				console.log(error);
 			}
 
 		})
