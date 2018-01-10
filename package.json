@@ -1,0 +1,32 @@
+{
+  "name": "acesso-io",
+  "version": "1.0.0",
+  "description": "NodeJS module for implementing Acesso (acesso.io) CredService v2",
+  "main": "index.js",
+  "scripts": {
+    "test": "node tests/credservice.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jesobreira/acesso-io.git"
+  },
+  "keywords": [
+    "document",
+    "brazil",
+    "verify",
+    "check",
+    "face",
+    "detection",
+    "validation"
+  ],
+  "author": "J. Santos <jsantos@forteras.tech>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jesobreira/acesso-io/issues"
+  },
+  "homepage": "https://github.com/jesobreira/acesso-io#readme",
+  "dependencies": {
+    "imageurl-base64": "^1.0.0",
+    "request": "^2.83.0"
+  }
+}
