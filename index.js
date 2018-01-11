@@ -80,6 +80,7 @@ NodeAcessoIO = function(cfg) {
 		},
 		"process": {
 			"create": function(type, subject, cb) {
+				cfg.last_subject = subject;
 				var options = {
 					method: 'POST',
 					url: cfg.url+'/process/create/'+type,
@@ -214,6 +215,39 @@ NodeAcessoIO = function(cfg) {
 						cb(e);
 					}
 				});
+			}
+		},
+		"subject": {
+			"authenticate": function(cpf, url, cb) {
+				if(!cpf) cpf = cfg.last_subject.Code;
+				imageConvert(url, true, function(error, b64) {
+					if(!error) {
+						var options = {
+							method: 'POST',
+							url: cfg.url+'/subject/'+cpf+'/authenticate',
+							headers:{
+								'X-AcessoBio-APIKEY': cfg.api_key,
+								'Authentication': cfg.authToken,
+								'Content-Type': 'application/json'
+							},
+							body: JSON.stringify({
+								imagebase64: b64
+							})
+						};
+						request(options, function(error, response, body) {
+							try {
+								body = JSON.parse(body);
+								if(body.Error) {
+									cb(body.Error)
+								} else {
+									cb(false);
+								}
+							} catch(e) {
+								cb(e);
+							}
+						});
+					}
+				})
 			}
 		}
 	}

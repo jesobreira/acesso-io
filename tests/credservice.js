@@ -21,42 +21,53 @@ acesso.user.authToken('', '', function(error, auth_token) {
 			if(!error) {
 
 				//Upload a face
-				acesso.process.faceInsert('http://localhost:8888/foto.JPG', function(error) {
+				acesso.process.faceInsert('', function(error) {
 
 					if(!error) {
 
-						// Upload a document
-
-						acesso.process.documentInsert(2, 'http://localhost:8888/documento.JPG', function(error) {
+						// Authenticates client's face (CPF, if empty, will be the last used)
+						acesso.subject.authenticate('', '', function(err, result) {
 
 							if(!error) {
+								console.log(result);
 
-								// Executes the process
-								acesso.process.execute(function(error) {
+								// Upload a document
+
+								acesso.process.documentInsert(2, '', function(error) {
+
 									if(!error) {
-										var checkProcess = function() {
 
-											acesso.process.get(function(error, info) {
+										// Executes the process
+										acesso.process.execute(function(error) {
+											if(!error) {
+												var checkProcess = function() {
 
-												if(!error) {
+													acesso.process.get(function(error, info) {
 
-													console.log(info);
+														if(!error) {
 
-												} else {
-													console.log(error);
+															console.log(info);
+
+														} else {
+															console.log(error);
+														}
+
+													});
 												}
 
-											});
-										}
+												// Every 10 seconds, check process status
+												checkProcess();
+												setInterval(checkProcess, 10);
+											} else {
+												console.log(error);
+											}
+										});
 
-										// Every 10 seconds, check process status
-										checkProcess();
-										setInterval(checkProcess, 10);
 									} else {
 										console.log(error);
 									}
-								});
 
+								})
 							} else {
 								console.log(error);
 							}
