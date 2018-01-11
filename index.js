@@ -41,7 +41,7 @@ NodeAcessoIO = function(cfg) {
 		        bufferProcess(img);
 		    });
 		} else {
-			fs.readFile(url_or_path, 'utf8', function(err, data) {
+			fs.readFile(url_or_path, function(err, data) {
 				if(err) {
 					cb(err);
 				} else {
@@ -110,7 +110,7 @@ NodeAcessoIO = function(cfg) {
 
 			"faceInsert": function(url, cb, download) {
 				if(typeof download == 'undefined') download = true;
-				imageConvert(url, true, function(error, b64) {
+				imageConvert(url, download, function(error, b64) {
 					if(!error) {
 						var options = {
 							method: 'POST',
@@ -136,7 +136,7 @@ NodeAcessoIO = function(cfg) {
 								cb(e);
 							}
 						});
-					}
+					} else cb(error);
 				})
 			},
 
@@ -181,7 +181,6 @@ NodeAcessoIO = function(cfg) {
 					}
 				};
 				request(options, function(error, response, body) {
-					console.log(body);
 					try {
 						body = JSON.parse(body);
 						if(body.Error) {
