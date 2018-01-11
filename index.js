@@ -108,7 +108,8 @@ NodeAcessoIO = function(cfg) {
 				});
 			},
 
-			"faceInsert": function(url, cb) {
+			"faceInsert": function(url, cb, download) {
+				if(typeof download == 'undefined') download = true;
 				imageConvert(url, true, function(error, b64) {
 					if(!error) {
 						var options = {
