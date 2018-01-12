@@ -52,6 +52,14 @@ NodeAcessoIO = function(cfg) {
 	}
 
 	return {
+		"processEnum": { "waiting_for_documents": 0, "capturing_documents": 1, "proccessed_with_conflict": 2, "proccessed_without_conflict": 3, "cancelled": 4 },
+    	"documentTypeEnum": {
+	        "foto_do_cliente": 1, "foto_do_cliente_divergencia": 100, "rg": 2, "cpf": 3, "cnh": 4, "comprovante_renda": 5, "comprovante_endereco": 6, "imposto_renda": 7, "certidao_casamento": 8, "certidao_obito": 9, "certidao_pagamento_debitos": 10,
+	        "identificacao_internacional": 11, "passaporte": 12, "cartao_cnpj": 13, "contrato_social": 14, "documentos_socios": 15, "declaracao_faturamento": 16, "ordem_compra": 17, "procuracoes": 18, "digital_do_cliente": 19, "carteira_de_trabalho": 20,
+	        "pac": 21, "ctps": 22, "comprovante_renda_complementar": 23, "identidade_classe": 24, "certidao_nascimento": 25, "extrato_inss": 26, "carte_iptu": 27, "decore": 28, "foto_cliente_liveness": 50, "foto_cliente_liveness_ir": 51, "formulario_aumento_limite": 101,
+	        "formulario_solicitacao_adicional": 102, "fatura_cartao": 103, "extrato_bancario": 105, "extrato_beneficio": 106, "tad": 107, "formulario_alteracao_endereco": 108, "formulario_alteracao_vencimento": 109, "formulario_extorno_inclusao_transacao": 110,
+	        "documentos_alteracao_limite": 11, "assinatura_digital": 112, "outros": 999, "outros1": 998, "outros2": 997, "outros3": 996, "outros4": 995, "outros5": 994
+	    },
 		"user": {
 			"authToken": function(login, password, cb) {
 				var options = {
@@ -140,8 +148,9 @@ NodeAcessoIO = function(cfg) {
 				})
 			},
 
-			"documentInsert": function(type, url, cb) {
-				imageConvert(url, true, function(error, b64) {
+			"documentInsert": function(type, url, cb, download) {
+				if(typeof download=='undefined') download = true;
+				imageConvert(url, download, function(error, b64) {
 					if(!error) {
 						var options = {
 							method: 'POST',
@@ -167,6 +176,8 @@ NodeAcessoIO = function(cfg) {
 								cb(e);
 							}
 						});
+					} else {
+						cb(error);
 					}
 				})
 			},
@@ -194,10 +205,11 @@ NodeAcessoIO = function(cfg) {
 				});
 			},
 
-			"get": function(cb) {
+			"get": function(process_id, cb) {
+				if(!process_id) process_id = cfg.last_process_id;
 				var options = {
 					method: 'GET',
-					url: cfg.url+'/process/'+cfg.last_process_id+'',
+					url: cfg.url+'/process/'+process_id+'',
 					headers:{
 						'X-AcessoBio-APIKEY': cfg.api_key,
 						'Authentication': cfg.authToken
@@ -209,7 +221,7 @@ NodeAcessoIO = function(cfg) {
 						if(body.Error) {
 							cb(body.Error)
 						} else {
-							cb(false, body);
+							cb(false, body.GetProcessResult);
 						}
 					} catch (e) {
 						cb(e);
@@ -218,9 +230,10 @@ NodeAcessoIO = function(cfg) {
 			}
 		},
 		"subject": {
-			"authenticate": function(cpf, url, cb) {
+			"authenticate": function(cpf, url, cb, download) {
 				if(!cpf) cpf = cfg.last_subject.Code;
-				imageConvert(url, true, function(error, b64) {
+				if(typeof download == 'undefined') download = true;
+				imageConvert(url, download, function(error, b64) {
 					if(!error) {
 						var options = {
 							method: 'POST',

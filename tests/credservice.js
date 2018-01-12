@@ -21,7 +21,7 @@ acesso.user.authToken('', '', function(error, auth_token) {
 			if(!error) {
 
 				//Upload a face
-				acesso.process.faceInsert('', function(error) {
+				acesso.process.faceInsert('http://can_be_an_external/picture.jpg', function(error) {
 
 					if(!error) {
 
@@ -33,7 +33,7 @@ acesso.user.authToken('', '', function(error, auth_token) {
 
 								// Upload a document
 
-								acesso.process.documentInsert(2, '', function(error) {
+								acesso.process.documentInsert(2, 'can/be/a/local/picture.jpg', function(error) {
 
 									if(!error) {
 
@@ -41,8 +41,8 @@ acesso.user.authToken('', '', function(error, auth_token) {
 										acesso.process.execute(function(error) {
 											if(!error) {
 												var checkProcess = function() {
-
-													acesso.process.get(function(error, info) {
+													// if empty, process_id will be the last used
+													acesso.process.get(''. function(error, info) {
 
 														if(!error) {
 
@@ -67,7 +67,7 @@ acesso.user.authToken('', '', function(error, auth_token) {
 										console.log(error);
 									}
 
-								})
+								}, false) // false = no download, local picture.jpg
 							} else {
 								console.log(error);
 							}
