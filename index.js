@@ -253,7 +253,7 @@ NodeAcessoIO = function(cfg) {
 								if(body.Error) {
 									cb(body.Error)
 								} else {
-									cb(false);
+									cb(false, body.AuthenticateSubjectResult.Score);
 								}
 							} catch(e) {
 								cb(e);

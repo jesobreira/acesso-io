@@ -1,5 +1,5 @@
 
-const acessoio = require('../index.js');
+const acessoio = require('acesso-io');
 
 // Creates an instance
 const acesso = acessoio({
@@ -26,10 +26,19 @@ acesso.user.authToken('', '', function(error, auth_token) {
 					if(!error) {
 
 						// Authenticates client's face (CPF, if empty, will be the last used)
-						acesso.subject.authenticate('', '', function(err, result) {
+						acesso.subject.authenticate('', '', function(err, score) {
 
 							if(!error) {
-								console.log(result);
+								console.log(score);
+
+								// score is between 0 and 100, where 100 means totally similar
+								// and 0 means totally different.
+								// the recommended minimal is 76
+								if(score >= 76) {
+									console.log("that's you");
+								} else {
+									console.log("that's not you");
+								}
 
 								// Upload a document
 
