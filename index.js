@@ -231,7 +231,7 @@ NodeAcessoIO = function(cfg) {
 		},
 		"subject": {
 			"authenticate": function(cpf, url, cb, download) {
-				if(!cpf) cpf = cfg.last_subject.Code;
+				if(!cpf) cpf = cfg.last_subject.Code.replace(/[^0-9]/g, '');
 				if(typeof download == 'undefined') download = true;
 				imageConvert(url, download, function(error, b64) {
 					if(!error) {
